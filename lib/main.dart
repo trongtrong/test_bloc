@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:bloc_example/test_cubit.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -14,13 +15,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<TestCubit>(
+          create: (context) => TestCubit(),
+        ),
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
 
-        primarySwatch: Colors.blue,
+          primarySwatch: Colors.blue,
+        ),
+        home: const MyHomePage(title: 'Flutter Cubit Home Page'),
       ),
-      home: const MyHomePage(title: 'Flutter Cubit Home Page'),
     );
   }
 }
@@ -35,48 +43,76 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-  }
 
   @override
   Widget build(BuildContext context) {
-
+    final cubit = context.read<TestCubit>();
     return Scaffold(
       appBar: AppBar(
 
         title: Text(widget.title),
       ),
-      body: BlocProvider<TestCubit>(
-        create: (context) => TestCubit(),
-        child: BlocConsumer<TestCubit, TestState>(
-          // buildWhen: (previous, current) => ,
-          builder: (context, state) {
-            print('========================');
+      body: BlocConsumer<TestCubit, TestState>(
+        // buildWhen: (previous, current) => ,
+        builder: (context, state) {
+          print('========================');
 
-            final cubit = context.read<TestCubit>();
 
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text((cubit.state.testString?.length ?? 0) > 0 ? (cubit.state.testString?.first ?? '0') : '0'),
-                  SizedBox(height: 20,),
-                  Text((cubit.state.testString2?.length ?? 0) > 0 ? (cubit.state.testString2?.first ?? '0') : '0'),
-                  RaisedButton(onPressed: () {
-                    context.read<TestCubit>().testCopy('6', /*Random().nextInt(100).toString()*/ '7');
-                    // context.read<TestCubit>().testCopy('6');
-                  },)
-                ],
-              ),
-            );
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                // Text((cubit.state.testString?.length ?? 0) > 0 ? (cubit.state.testString?.first ?? '0') : '0'),
+                SizedBox(height: 20,),
+                // Text((cubit.state.testString2?.length ?? 0) > 0 ? (cubit.state.testString2?.first ?? '0') : '0'),
+                CupertinoButton(onPressed: () {
+                  context.read<TestCubit>().testCopy('6', /*Random().nextInt(100).toString()*/ '7');
+                }, child: Text('click 1'),),
+
+                SizedBox(height: 20,),
+
+                CupertinoButton(onPressed: () {
+                  // context.read<TestCubit>().clear();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => SecondRoute()),
+                  );
+
+
+                }, child: Text(cubit.state.text ?? 'Click'),)
+
+              ],
+            ),
+          );
+        },
+        listener: (context, state) {
+
+        },
+      ),
+    );
+  }
+}
+
+class SecondRoute extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Second Route'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // context.read<TestCubit>().state.copyWith(text: 'tessttttt');
+            context.read<TestCubit>().state.text = 'sdsdsds';
+            Navigator.pop(context);
+
           },
-          listener: (context, state) {
-
-          },
+          child: const Text('Go back!'),
         ),
       ),
     );
   }
 }
+
